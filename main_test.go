@@ -1,0 +1,4 @@
+package main
+import("os";"path/filepath";"testing")
+func TestQuota(t *testing.T){q,e:=quota("50000 100000");if e!=nil||q==nil||*q!=.5{t.Fatal(q,e)};q,e=quota("max 100000");if e!=nil||q!=nil{t.Fatal(q,e)};if _,e=quota("50 0");e==nil{t.Fatal("zero period accepted")}}
+func TestFixtureAndDepth(t *testing.T){root:=t.TempDir();files:=map[string]string{"memory.current":"1234","memory.max":"4096","pids.current":"2","pids.max":"16","cpu.max":"200000 100000","cpu.stat":"usage_usec 12345\n"};for name,value:=range files{if e:=os.WriteFile(filepath.Join(root,name),[]byte(value),0600);e!=nil{t.Fatal(e)}};if e:=os.Mkdir(filepath.Join(root,"child"),0700);e!=nil{t.Fatal(e)};g:=readGroup(root);if *g.MemoryCurrent!=1234||*g.CPUQuotaCores!=2||*g.CPUUsageUsec!=12345||len(g.Errors)!=0{t.Fatal(g)};rows,e:=scan(root,0);if e!=nil||len(rows)!=1{t.Fatal(rows,e)};rows,e=scan(root,1);if e!=nil||len(rows)!=2||len(rows[1].Errors)==0{t.Fatal(rows,e)}}
